@@ -1,31 +1,28 @@
-class Solution(object):
-    def cherryPickup(self, grid):
+class Solution:
+    def cherryPickup(self, grid: List[List[int]]) -> int:
         n = len(grid)
 
-        dp = [[[float('-inf')]*n for _ in range(n)] for _ in range(n)]
-        dp[0][0][0] = 0
+        @cache
+        def dfs(k, r1, r2):
+            c1 = k - r1
+            c2 = k - r2
 
-        for x1 in range(n):
-            for y1 in range(n):
-                for x2 in range(n):
-                    y2 = x1 + y1 - x2
-                    if not (0<= y2 < n):
-                        continue
-                    if grid[x1][y1] == -1 or grid[x2][y2] == -1:
-                        continue
-                    
-                    if x1 > 0 and x2 > 0:
-                        dp[x1][y1][x2] = max(dp[x1][y1][x2], dp[x1-1][y1][x2-1])
-                    if y1 > 0 and x2 > 0:
-                        dp[x1][y1][x2] = max(dp[x1][y1][x2], dp[x1][y1-1][x2-1])
-                    if x1 > 0:
-                        dp[x1][y1][x2] = max(dp[x1][y1][x2], dp[x1-1][y1][x2])
-                    if y1 > 0:
-                        dp[x1][y1][x2] = max(dp[x1][y1][x2], dp[x1][y1-1][x2])
-                    
-                    if x1 == x2 and y1 == y2:
-                        dp[x1][y1][x2] += grid[x1][y1]
-                    else:
-                        dp[x1][y1][x2] += grid[x1][y1] + grid[x2][y2]
-        
-        return max(0 ,dp[n-1][n-1][n-1])
+            if r1 >= n or r2 >= n or c1 >= n or c2 >= n or grid[r1][c1] == -1 or grid[r2][c2] == -1:
+                return -inf
+            if r1 == n - 1 and c1 == n - 1:
+                return grid[r1][c1]
+
+            if r1 != r2 or c1 != c2:
+                score = grid[r1][c1] + grid[r2][c2]
+            else:
+                score = grid[r1][c1]
+
+            right_right = dfs(k + 1, r1, r2)
+            right_down = dfs(k + 1, r1, r2 + 1)
+            down_right = dfs(k + 1, r1 + 1, r2)
+            down_down = dfs(k + 1, r1 + 1, r2 + 1)
+
+            return score + max(right_right, right_down, down_right, down_down)
+
+        res = dfs(0, 0, 0)
+        return res if res >= 0 else 0
